@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: backend
+    static_configs:
+      - targets: ["backend:8000"]
+
+  - job_name: outbox-relay
+    static_configs:
+      - targets: ["outbox-relay:9101"]
+
+  - job_name: diagnosis-worker
+    static_configs:
+      - targets: ["diagnosis-worker:9102"]
+
+  - job_name: missing-telemetry-checker
+    static_configs:
+      - targets: ["missing-telemetry-checker:9103"]

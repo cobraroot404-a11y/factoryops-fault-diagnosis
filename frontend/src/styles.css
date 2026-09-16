@@ -1,0 +1,118 @@
+:root {
+  --bg: #0f172a;
+  --panel: #1e293b;
+  --panel-alt: #273449;
+  --border: #334155;
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  --accent: #38bdf8;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --crit: #f87171;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+a { color: var(--accent); }
+
+button, input, select, textarea { font: inherit; }
+
+button {
+  cursor: pointer;
+  background: var(--accent);
+  color: #06202f;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 600;
+}
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+button.secondary { background: var(--panel-alt); color: var(--text); border: 1px solid var(--border); }
+button.danger { background: var(--crit); color: #2b0a0a; }
+
+input, textarea, select {
+  background: var(--panel-alt);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  width: 100%;
+}
+
+label { display: block; margin-bottom: 4px; font-size: 0.9rem; color: var(--text-dim); }
+.field { margin-bottom: 14px; }
+
+.app-shell { min-height: 100vh; display: flex; flex-direction: column; }
+
+.topnav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px; background: var(--panel); border-bottom: 1px solid var(--border);
+  flex-wrap: wrap; gap: 10px;
+}
+.topnav .brand { font-weight: 700; font-size: 1.1rem; }
+.topnav nav { display: flex; gap: 14px; flex-wrap: wrap; }
+.topnav nav a { color: var(--text-dim); text-decoration: none; font-weight: 600; }
+.topnav nav a.active, .topnav nav a:hover { color: var(--accent); }
+.topnav .who { display: flex; align-items: center; gap: 10px; color: var(--text-dim); font-size: 0.9rem; }
+
+main.content { flex: 1; padding: 20px; max-width: 1200px; margin: 0 auto; width: 100%; }
+
+.card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 16px;
+}
+
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+
+.badge {
+  display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.03em;
+}
+.badge.healthy { background: rgba(52,211,153,0.15); color: var(--ok); }
+.badge.fault { background: rgba(248,113,113,0.15); color: var(--crit); }
+.badge.missing { background: rgba(251,191,36,0.15); color: var(--warn); }
+.badge.unknown { background: rgba(148,163,184,0.15); color: var(--text-dim); }
+.badge.warning { background: rgba(251,191,36,0.15); color: var(--warn); }
+.badge.critical { background: rgba(248,113,113,0.15); color: var(--crit); }
+.badge.open { background: rgba(248,113,113,0.15); color: var(--crit); }
+.badge.resolved { background: rgba(52,211,153,0.15); color: var(--ok); }
+
+.simulated-tag {
+  font-size: 0.72rem; color: var(--text-dim); border: 1px dashed var(--border);
+  border-radius: 6px; padding: 1px 6px; margin-left: 8px;
+}
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 0.92rem; }
+th { color: var(--text-dim); font-weight: 600; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+
+.state-msg { padding: 30px; text-align: center; color: var(--text-dim); }
+.state-msg.error { color: var(--crit); }
+
+.checklist-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.checklist-item input { width: auto; }
+
+.login-wrap {
+  display: flex; align-items: center; justify-content: center; min-height: 100vh;
+}
+.login-card { width: 360px; }
+
+.filters { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.filters select, .filters input { width: auto; min-width: 140px; }
+
+.kv { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed var(--border); font-size: 0.9rem; }
+.kv:last-child { border-bottom: none; }
+
+@media (max-width: 640px) {
+  main.content { padding: 12px; }
+  .topnav { flex-direction: column; align-items: flex-start; }
+}

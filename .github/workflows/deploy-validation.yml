@@ -1,0 +1,96 @@
+name: Deployment validation
+
+# Not continuous deployment to a persistent environment: this validates that a
+# tagged release actually builds, starts healthy, and survives a fault-and-
+# recovery smoke test, entirely inside a FRESH, EPHEMERAL GitHub-hosted runner
+# that is torn down at the end of the job. No self-hosted runner is used and
+# nothing here deploys to any long-lived host. "Local CD" (deploying this
+# release to the developer's own machine) is a separate, manual step — see
+# scripts/deploy.sh and docs/runbooks/deploy.md.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-release-in-ephemeral-environment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate local-only CI secrets
+        run: |
+          cp .env.example .env
+          python3 - <<'PY'
+import secrets
+lines = open(".env").read().splitlines()
+out = []
+for line in lines:
+    if line.startswith(("POSTGRES_PASSWORD=", "RABBITMQ_DEFAULT_PASS=", "JWT_SECRET=", "GRAFANA_ADMIN_PASSWORD=")):
+        key = line.split("=")[0]
+        out.append(f"{key}={secrets.token_urlsafe(24)}")
+    else:
+        out.append(line)
+open(".env", "w").write("\n".join(out) + "\n")
+PY
+
+      - name: Build versioned release images
+        run: |
+          export RELEASE_TAG="${{ github.sha }}"
+          docker compose -f infra/compose/docker-compose.yml --env-file .env build backend outbox-relay diagnosis-worker missing-telemetry-checker frontend
+          echo "RELEASE_TAG=${{ github.sha }}" >> "$GITHUB_ENV"
+
+      - name: Start release and migrate
+        run: |
+          docker compose -f infra/compose/docker-compose.yml --env-file .env up -d postgres rabbitmq
+          docker compose -f infra/compose/docker-compose.yml --env-file .env run --rm backend alembic upgrade head
+          docker compose -f infra/compose/docker-compose.yml --env-file .env up -d backend outbox-relay diagnosis-worker missing-telemetry-checker frontend
+
+      - name: Health check
+        run: |
+          for i in $(seq 1 40); do
+            if curl -fs http://localhost:8000/health > /dev/null; then echo "backend healthy"; break; fi
+            sleep 2
+            if [ "$i" -eq 40 ]; then echo "backend never became healthy" >&2; exit 1; fi
+          done
+          curl -fs http://localhost:5173/ > /dev/null && echo "frontend healthy"
+
+      - name: Seed demo data
+        run: docker compose -f infra/compose/docker-compose.yml --env-file .env run --rm backend python seed.py
+
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r backend/requirements-dev.txt
+
+      - name: Fault-and-recovery smoke test against the deployed release
+        env:
+          BACKEND_BASE_URL: http://localhost:8000
+        run: |
+          set -a; source .env; set +a
+          export DATABASE_URL="postgresql+psycopg://${POSTGRES_USER:-factoryops}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB:-factoryops}"
+          pytest tests/backend/test_diagnosis.py -v --junitxml=junit-deploy-smoke.xml
+
+      - name: Write job summary
+        if: always()
+        run: |
+          {
+            echo "### FactoryOps deployment validation"
+            echo "Validated commit: \`${{ github.sha }}\`"
+            echo "Environment: ephemeral GitHub-hosted runner (torn down at job end) — NOT a persistent deployment."
+            echo "Run: ${{ github.run_id }} — $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deploy-validation-report
+          path: junit-deploy-smoke.xml
+          retention-days: 14
+
+      - name: Tear down (ephemeral runner — nothing persists)
+        if: always()
+        run: docker compose -f infra/compose/docker-compose.yml --env-file .env down -v

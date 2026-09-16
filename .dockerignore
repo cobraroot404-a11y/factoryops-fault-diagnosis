@@ -1,0 +1,17 @@
+.git
+.github
+.venv-test
+node_modules
+frontend/node_modules
+frontend/dist
+tests
+docs
+portfolio
+*.md
+.env
+.env.*
+infra/compose/seed-output
+infra/compose/pgdata
+infra/compose/rabbitmq-data
+infra/compose/grafana-data
+infra/compose/prometheus-data

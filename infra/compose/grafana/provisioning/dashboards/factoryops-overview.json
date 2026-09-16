@@ -1,0 +1,58 @@
+{
+  "title": "FactoryOps Overview",
+  "uid": "factoryops-overview",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5s",
+  "time": { "from": "now-30m", "to": "now" },
+  "panels": [
+    {
+      "id": 1, "title": "Readings processed / sec", "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [{ "expr": "rate(factoryops_readings_processed_total[1m])", "legendFormat": "processed" }]
+    },
+    {
+      "id": 2, "title": "Failures / retries / dead-lettered per sec", "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        { "expr": "rate(factoryops_readings_failed_total[1m])", "legendFormat": "failed" },
+        { "expr": "rate(factoryops_readings_retried_total[1m])", "legendFormat": "retried" },
+        { "expr": "rate(factoryops_readings_dead_lettered_total[1m])", "legendFormat": "dead-lettered" }
+      ]
+    },
+    {
+      "id": 3, "title": "Incidents opened by fault type", "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [{ "expr": "sum by (fault_type) (increase(factoryops_incidents_opened_total[5m]))", "legendFormat": "{{fault_type}}" }]
+    },
+    {
+      "id": 4, "title": "Incidents resolved by fault type", "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [{ "expr": "sum by (fault_type) (increase(factoryops_incidents_resolved_total[5m]))", "legendFormat": "{{fault_type}}" }]
+    },
+    {
+      "id": 5, "title": "Detection latency (p50 / p95)", "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(factoryops_detection_latency_seconds_bucket[5m])) by (le))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(factoryops_detection_latency_seconds_bucket[5m])) by (le))", "legendFormat": "p95" }
+      ]
+    },
+    {
+      "id": 6, "title": "Outbox events relayed / sec", "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "targets": [{ "expr": "rate(factoryops_outbox_relayed_total[1m])", "legendFormat": "relayed" }]
+    },
+    {
+      "id": 7, "title": "Duplicate messages ignored / sec", "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "targets": [{ "expr": "rate(factoryops_readings_duplicate_total[1m])", "legendFormat": "duplicates" }]
+    },
+    {
+      "id": 8, "title": "Backend HTTP request rate", "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "targets": [{ "expr": "sum by (handler) (rate(http_requests_total[1m]))", "legendFormat": "{{handler}}" }]
+    }
+  ]
+}

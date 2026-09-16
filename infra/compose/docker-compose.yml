@@ -1,0 +1,170 @@
+name: factoryops
+
+x-backend-env: &backend-env
+  DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-factoryops}:${POSTGRES_PASSWORD:-changeme-local-only}@postgres:5432/${POSTGRES_DB:-factoryops}
+  JWT_SECRET: ${JWT_SECRET:-changeme-local-only-random-string}
+  RABBITMQ_URL: amqp://${RABBITMQ_DEFAULT_USER:-factoryops}:${RABBITMQ_DEFAULT_PASS:-changeme-local-only}@rabbitmq:5672/
+  CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+  SEED_OUTPUT_DIR: /seed-output
+  SEED_DEMO_PASSWORD: ${SEED_DEMO_PASSWORD:-FactoryOps!Demo1}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-factoryops}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme-local-only}
+      POSTGRES_DB: ${POSTGRES_DB:-factoryops}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-factoryops}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-factoryops}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-changeme-local-only}
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ../..
+      dockerfile: backend/Dockerfile
+    image: factoryops-backend:${RELEASE_TAG:-dev}
+    restart: unless-stopped
+    environment:
+      <<: *backend-env
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./seed-output:/seed-output
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  outbox-relay:
+    build:
+      context: ../..
+      dockerfile: worker/Dockerfile
+    image: factoryops-worker:${RELEASE_TAG:-dev}
+    restart: unless-stopped
+    command: ["python", "outbox_relay.py"]
+    environment:
+      <<: *backend-env
+    ports:
+      - "127.0.0.1:9101:9101"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  diagnosis-worker:
+    build:
+      context: ../..
+      dockerfile: worker/Dockerfile
+    image: factoryops-worker:${RELEASE_TAG:-dev}
+    restart: unless-stopped
+    command: ["python", "diagnosis_consumer.py"]
+    environment:
+      <<: *backend-env
+    ports:
+      - "127.0.0.1:9102:9102"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  missing-telemetry-checker:
+    build:
+      context: ../..
+      dockerfile: worker/Dockerfile
+    image: factoryops-worker:${RELEASE_TAG:-dev}
+    restart: unless-stopped
+    command: ["python", "missing_telemetry_checker.py"]
+    environment:
+      <<: *backend-env
+    ports:
+      - "127.0.0.1:9103:9103"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  simulator:
+    build:
+      context: ../..
+      dockerfile: simulator/Dockerfile
+    image: factoryops-simulator:${RELEASE_TAG:-dev}
+    profiles: ["simulate"]
+    environment:
+      SIMULATOR_CONFIG_PATH: /config/machine-keys.json
+      BACKEND_BASE_URL: http://backend:8000
+      SIMULATE_INTERVAL_SECONDS: "2"
+    volumes:
+      - ./seed-output:/config:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ../..
+      dockerfile: frontend/Dockerfile
+    image: factoryops-frontend:${RELEASE_TAG:-dev}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5173:80"
+    depends_on:
+      - backend
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+
+  grafana:
+    image: grafana/grafana-oss:11.3.1
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-changeme-local-only}
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - prometheus
+
+volumes:
+  pgdata:
+  rabbitmq_data:
+  prometheus_data:
+  grafana_data:
