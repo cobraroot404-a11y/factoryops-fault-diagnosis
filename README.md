@@ -4,8 +4,8 @@
 [![Deployment validation](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/workflows/deploy-validation.yml/badge.svg)](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/workflows/deploy-validation.yml)
 
 Latest successful runs actually inspected for this delivery:
-- CI: [run 35153247446](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/runs/35153247446) — commit `25b6ebc`, all 5 jobs green
-- Deployment validation: [run 35153247538](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/runs/35153247538) — commit `25b6ebc`, green
+- CI: [run 35154033207](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/runs/35154033207) — commit `0fb963c`, all 5 jobs green
+- Deployment validation: [run 35154033116](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/runs/35154033116) — commit `0fb963c`, green
 
 > **All telemetry in this project is simulated.** FactoryOps has not been
 > validated against physical manufacturing equipment. It is a containerized
@@ -159,7 +159,7 @@ environment, not continuous deployment to any persistent host.**
 
 ### Verification
 
-Actually run and inspected on this machine (commit `25b6ebc`, 2026-09-16):
+Actually run and inspected on this machine (commit `0fb963c`, 2026-09-16):
 
 | Suite | Result |
 |---|---|
