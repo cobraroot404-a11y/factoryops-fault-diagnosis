@@ -1,0 +1,25 @@
+{
+  "run_at_utc": "2026-09-16T21:14:07.693343+00:00",
+  "notes": "All telemetry is simulated. Measured against a local docker-compose stack on this machine; not validated on physical equipment.",
+  "config": {
+    "persistence_breaches_to_trigger": 3,
+    "persistence_healthy_to_clear": 5
+  },
+  "detection_and_recovery": {
+    "fault_injection_to_detection_seconds": 1.094,
+    "fault_removal_to_verified_recovery_seconds": 0.953
+  },
+  "throughput": {
+    "readings_sent": 50,
+    "readings_accepted": 50,
+    "readings_rejected": 0,
+    "accept_success_rate": 1.0,
+    "ingest_wall_seconds_for_batch": 1.297,
+    "approx_processing_drain_wait_seconds": 3.015
+  },
+  "false_incident_rate": {
+    "healthy_simulation_duration_seconds": 20,
+    "healthy_readings_sent": 20,
+    "false_incidents_opened": 0
+  }
+}

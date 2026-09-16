@@ -31,7 +31,7 @@ from app.security import generate_machine_api_key, hash_machine_api_key, hash_pa
 BASE_URL = os.environ.get("BACKEND_BASE_URL", "http://localhost:8000")
 
 
-def make_machine(db, suffix: str):
+def make_factory_with_technician(db, suffix: str):
     factory = Factory(name=f"Measurement Factory {suffix}")
     db.add(factory)
     db.flush()
@@ -40,11 +40,16 @@ def make_machine(db, suffix: str):
         display_name="Measurement Technician", password_hash=hash_password("TestPassword!1"),
     )
     db.add(technician)
+    db.commit()
+    return factory, technician
+
+
+def make_machine(db, factory, suffix: str):
     key = generate_machine_api_key()
     machine = Machine(factory_id=factory.id, name=f"Measure-Motor-{suffix}", api_key_hash=hash_machine_api_key(key))
     db.add(machine)
     db.commit()
-    return technician, machine, key
+    return machine, key
 
 
 def send_reading(client, api_key, ts, **overrides):
@@ -132,6 +137,9 @@ def measure_throughput(db, client, api_key, sample_count=50):
 
 
 def measure_false_incidents(client, headers, machine_id, api_key, duration_seconds=20, interval=1.0):
+    # Uses its OWN fresh machine (never touched by the detection/recovery
+    # measurement above), so any incident found here can only have come from
+    # this healthy-only window -- not leftover state from an earlier check.
     base = datetime.now(timezone.utc)
     n = int(duration_seconds / interval)
     for i in range(n):
@@ -148,7 +156,13 @@ def measure_false_incidents(client, headers, machine_id, api_key, duration_secon
 def main():
     db = SessionLocal()
     suffix = uuid.uuid4().hex[:8]
-    technician, machine, api_key = make_machine(db, suffix)
+    factory, technician = make_factory_with_technician(db, suffix)
+    machine, api_key = make_machine(db, factory, suffix)
+    # A second, untouched machine in the SAME factory (so the same technician
+    # token can query it) for the false-incident check, so it can never see
+    # the incident intentionally opened on `machine` above.
+    false_rate_machine, false_rate_api_key = make_machine(db, factory, f"{suffix}-baseline")
+
     with httpx.Client(base_url=BASE_URL, timeout=15.0) as client:
         token = client.post("/auth/login", json={"email": technician.email, "password": "TestPassword!1"}).json()["access_token"]
         headers = {"Authorization": f"Bearer {token}"}
@@ -160,7 +174,7 @@ def main():
         throughput = measure_throughput(db, client, api_key)
 
         print("measuring false-incident rate on a healthy simulation window...")
-        false_rate = measure_false_incidents(client, headers, str(machine.id), api_key)
+        false_rate = measure_false_incidents(client, headers, str(false_rate_machine.id), false_rate_api_key)
 
     result = {
         "run_at_utc": datetime.now(timezone.utc).isoformat(),
