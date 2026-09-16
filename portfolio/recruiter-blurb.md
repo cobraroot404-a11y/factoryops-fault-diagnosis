@@ -20,7 +20,8 @@ been validated on physical equipment.
 > multi-tenant factory isolation, and bounded-retry dead-letter handling;
 > verified via automated CI (unit, integration, and deterministic
 > fault-and-recovery tests) and an ephemeral GitHub Actions deployment
-> validation workflow — see [<CI badge / run link once pushed>].
+> validation workflow — see the [passing CI run](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/runs/35153247446).
 
-Replace the bracketed link with the actual passing CI run URL once available
-(see the root [README.md](../README.md) for the live badge).
+Repository: https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis
+(see the root [README.md](../README.md) for the live CI badge and full
+verification details).

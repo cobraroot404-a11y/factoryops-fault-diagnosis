@@ -192,11 +192,11 @@ def main():
     os.makedirs(os.path.join(ROOT, "portfolio", "reports"), exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     raw_path = os.path.join(ROOT, "portfolio", "measurements", f"run-{stamp}.json")
-    with open(raw_path, "w") as f:
+    with open(raw_path, "w", encoding="utf-8") as f:
         json.dump(result, f, indent=2)
 
     report_path = os.path.join(ROOT, "portfolio", "reports", "measurements-report.md")
-    with open(report_path, "w") as f:
+    with open(report_path, "w", encoding="utf-8") as f:
         f.write(f"""# FactoryOps measurements
 
 Run at: {result['run_at_utc']} (UTC)

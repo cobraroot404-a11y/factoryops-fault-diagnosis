@@ -84,15 +84,15 @@ def main() -> None:
             path = os.path.join(OUTPUT_DIR, "machine-keys.json")
             existing = {"machines": []}
             if os.path.exists(path):
-                with open(path) as f:
+                with open(path, encoding="utf-8") as f:
                     existing = json.load(f)
             existing["machines"].extend(machine_keys)
-            with open(path, "w") as f:
+            with open(path, "w", encoding="utf-8") as f:
                 json.dump(existing, f, indent=2)
             print(f"wrote {len(machine_keys)} new machine key(s) to {path}")
 
         cred_path = os.path.join(OUTPUT_DIR, "demo-credentials.json")
-        with open(cred_path, "w") as f:
+        with open(cred_path, "w", encoding="utf-8") as f:
             json.dump(credentials, f, indent=2)
         print(f"wrote demo credentials to {cred_path} (local only, gitignored)")
     finally:

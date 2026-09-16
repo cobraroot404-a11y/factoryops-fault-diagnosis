@@ -1,9 +1,11 @@
 # FactoryOps — Automated Customer Fault Diagnosis & Guided Debugging for Cloud-Based Manufacturing
 
-<!-- CI_BADGES_START -->
-CI badges and workflow run links go here after the first push (see the
-"Verification" section below for the actual, inspected run results).
-<!-- CI_BADGES_END -->
+[![CI](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/workflows/ci.yml/badge.svg)](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/workflows/ci.yml)
+[![Deployment validation](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/workflows/deploy-validation.yml/badge.svg)](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/workflows/deploy-validation.yml)
+
+Latest successful runs actually inspected for this delivery:
+- CI: [run 35153247446](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/runs/35153247446) — commit `25b6ebc`, all 5 jobs green
+- Deployment validation: [run 35153247538](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/runs/35153247538) — commit `25b6ebc`, green
 
 > **All telemetry in this project is simulated.** FactoryOps has not been
 > validated against physical manufacturing equipment. It is a containerized
@@ -155,9 +157,26 @@ runs migrations, health-checks it, runs a fault-and-recovery smoke test, and
 tears everything down. **This is deployment validation in a temporary
 environment, not continuous deployment to any persistent host.**
 
-<!-- VERIFICATION_START -->
-### Verification (filled in after an actual inspected run — see below)
-<!-- VERIFICATION_END -->
+### Verification
+
+Actually run and inspected on this machine (commit `25b6ebc`, 2026-09-16):
+
+| Suite | Result |
+|---|---|
+| Rule-engine unit tests (`tests/worker`, no DB/broker needed) | 6/6 passed |
+| Backend/API integration tests (`tests/backend`, live Postgres + RabbitMQ + workers) | 18/18 passed |
+| e2e demonstrations (`tests/e2e`: worker-stop/backlog recovery, poison→dead-letter) | 2/2 passed |
+| Frontend tests (`npm run test`, Vitest) | 3/3 passed |
+| Frontend typecheck / lint / build | clean, 0 errors |
+| `pip-audit` (backend + worker + simulator deps) | 0 known vulnerabilities |
+| `npm audit --audit-level=high` (frontend deps) | 0 vulnerabilities |
+| Local `scripts/deploy.sh` → health check | verified: backend healthy after deploy |
+| Local `scripts/rollback.sh` → health check | verified: rolled back to the prior release tag and healthy |
+
+All 29 automated tests pass. The same suites run automatically in
+[`ci.yml`](.github/workflows/ci.yml) on every push/PR, and a fault-and-recovery
+smoke test re-runs against a freshly deployed release in
+[`deploy-validation.yml`](.github/workflows/deploy-validation.yml).
 
 ## Local deployment vs. automated CD
 
@@ -170,15 +189,41 @@ environment, not continuous deployment to any persistent host.**
 
 ## Measurements
 
-See [portfolio/reports/measurements-report.md](portfolio/reports/measurements-report.md)
-for methodology, results, and limitations, and
-[portfolio/measurements/](portfolio/measurements/) for the raw JSON from the
-run that produced it.
+Real measurements from an actual run against this local stack (commit
+`25b6ebc`, 2026-09-16T21:42:52Z) — full methodology, raw data, and
+limitations in [portfolio/reports/measurements-report.md](portfolio/reports/measurements-report.md)
+and [portfolio/measurements/](portfolio/measurements/):
+
+| Metric | Value |
+|---|---|
+| Fault injection → detection | 1.062 s |
+| Fault removal → verified recovery | 1.157 s |
+| Ingest accept success rate (50 readings) | 100% |
+| False incidents during a 20s healthy-only simulation | 0 |
+
+Detection requires 3 consecutive breaching readings; recovery requires 5
+consecutive healthy readings — a separate, larger window, which is why
+recovery is intentionally slower than detection. This is a single local run
+on a development machine, not a load test or a statistically averaged
+result — see the report for the full caveats.
 
 ## Screenshots & recording
 
-See [portfolio/screenshots/](portfolio/screenshots/) for healthy-operation,
-diagnosis, and recovery screenshots taken from an actual local run.
+Captured from an actual run of this stack (technician/customer flows, real
+simulated data, real incident lifecycle):
+
+| | |
+|---|---|
+| [00-dashboard-all-healthy.png](portfolio/screenshots/00-dashboard-all-healthy.png) | All 3 Northgate motors healthy, live charts |
+| [01-dashboard-fault-detected.png](portfolio/screenshots/01-dashboard-fault-detected.png) | Motor-1 shows FAULT after overheating injection |
+| [02-incidents-list.png](portfolio/screenshots/02-incidents-list.png) | Incident list, filterable by status/severity |
+| [03-incident-diagnosis.png](portfolio/screenshots/03-incident-diagnosis.png) | Observations, evidence, suspected causes |
+| [04-incident-checklist.png](portfolio/screenshots/04-incident-checklist.png) | Guided troubleshooting checklist |
+| [05-fault-injection-controls.png](portfolio/screenshots/05-fault-injection-controls.png) | Technician-only fault injection controls |
+| [06-tickets-linked.png](portfolio/screenshots/06-tickets-linked.png) | Customer ticket auto-linked to the open incident |
+| [07-incidents-resolved.png](portfolio/screenshots/07-incidents-resolved.png) | Incident list after resolution |
+| [08-incident-recovery-verified.png](portfolio/screenshots/08-incident-recovery-verified.png) | Recovery verified after the healthy window |
+| [09-factory-isolation-rivermill.png](portfolio/screenshots/09-factory-isolation-rivermill.png) | A Rivermill Fabrication technician sees only Rivermill's Motor-A/Motor-B — proof of factory isolation |
 
 The 3-minute demo recording described in
 [portfolio/video-script.md](portfolio/video-script.md) was **not recorded**
