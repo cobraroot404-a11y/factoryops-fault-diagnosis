@@ -13,7 +13,6 @@ Usage: run from repo root after `./scripts/start.sh && ./scripts/migrate.sh`
 """
 import json
 import os
-import statistics
 import sys
 import time
 import uuid

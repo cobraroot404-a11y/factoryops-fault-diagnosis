@@ -77,18 +77,10 @@ jobs:
       - name: Generate local-only CI secrets
         run: |
           cp .env.example .env
-          python3 - <<'PY'
-import secrets
-lines = open(".env").read().splitlines()
-out = []
-for line in lines:
-    if line.startswith(("POSTGRES_PASSWORD=", "RABBITMQ_DEFAULT_PASS=", "JWT_SECRET=", "GRAFANA_ADMIN_PASSWORD=")):
-        key = line.split("=")[0]
-        out.append(f"{key}={secrets.token_urlsafe(24)}")
-    else:
-        out.append(line)
-open(".env", "w").write("\n".join(out) + "\n")
-PY
+          for key in POSTGRES_PASSWORD RABBITMQ_DEFAULT_PASS JWT_SECRET GRAFANA_ADMIN_PASSWORD; do
+            value=$(openssl rand -hex 24)
+            sed -i "s#^${key}=.*#${key}=${value}#" .env
+          done
 
       - name: Container builds
         run: docker compose -f infra/compose/docker-compose.yml --env-file .env build

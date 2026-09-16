@@ -42,12 +42,14 @@ def test_noise_in_hysteresis_band_does_not_flap():
     assert all(h.consecutive_breach == 0 and h.consecutive_healthy == 0 for h in history)
 
 
-def test_single_dip_below_trigger_resets_breach_counter():
+def test_hysteresis_dip_freezes_rather_than_resets_the_breach_counter():
+    # 80C is inside the hysteresis band (between clear=75 and trigger=85): it
+    # freezes the breach counter at 2 rather than resetting it to 0, so the
+    # very next genuine breach (the 4th reading overall) reaches 3 and triggers
+    # -- one reading earlier than a "reset on any non-breach" design would.
     history = _run([90.0, 90.0, 80.0, 90.0, 90.0, 90.0])
-    # the dip to 80 (hysteresis band) freezes the counter rather than resetting
-    # it to zero outright is a design choice; verify it never triggers early
-    # and DOES trigger once three consecutive genuine breaches occur.
-    assert history[-1].transitioned_to_active is True
+    assert [h.transitioned_to_active for h in history] == [False, False, False, True, False, False]
+    assert history[-1].state == "active"
 
 
 def test_recovery_requires_full_healthy_window():
