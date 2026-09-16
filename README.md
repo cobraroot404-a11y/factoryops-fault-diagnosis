@@ -270,7 +270,24 @@ Licensed under a proprietary source-visible license — see [LICENSE](LICENSE)
 
 ## Current local status
 
-<!-- STATUS_START -->
-Status to be filled in after final verification and cleanup (see below): is
-the local demo currently running, and how to restart it.
-<!-- STATUS_END -->
+**The local demo is stopped.** After building, testing, measuring, and
+screenshotting everything above, all FactoryOps containers on this machine
+were stopped with `./scripts/stop.sh`. Per the project's zero-standing-cost
+scope, nothing is left running.
+
+- **Data is preserved**, not deleted: the Postgres/RabbitMQ/Grafana/
+  Prometheus Docker volumes still contain the demo factories, machines, and
+  the full overheating incident (opened → linked ticket → resolved) used for
+  the screenshots above.
+- **Restart** with:
+  ```bash
+  ./scripts/start.sh
+  ```
+  (no need to re-run `migrate.sh`/`seed.sh` — the existing volumes already
+  have the schema and seed data; those scripts are idempotent if you want to
+  run them anyway).
+- **Full reset** (wipe all data and start over): see
+  [docs/runbooks/cleanup.md](docs/runbooks/cleanup.md).
+- Built local Docker images (`factoryops-backend`, `factoryops-worker`,
+  `factoryops-frontend`, tags `dev` and the deployed commit SHA) remain in
+  this machine's local image cache; nothing was pushed to any registry.
