@@ -3,9 +3,9 @@
 [![CI](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/workflows/ci.yml/badge.svg)](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/workflows/ci.yml)
 [![Deployment validation](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/workflows/deploy-validation.yml/badge.svg)](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/workflows/deploy-validation.yml)
 
-Latest successful runs actually inspected for this delivery:
-- CI: [run 35154033207](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/runs/35154033207) — commit `0fb963c`, all 5 jobs green
-- Deployment validation: [run 35154033116](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/runs/35154033116) — commit `0fb963c`, green
+Latest successful runs actually inspected for this delivery (current `main` HEAD):
+- CI: [run 35154869148 — success](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/runs/35154869148) — commit `9c3b83b`, all 5 jobs green
+- Deployment validation: [run 35154869093 — success](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/runs/35154869093) — commit `9c3b83b`, green
 
 > **All telemetry in this project is simulated.** FactoryOps has not been
 > validated against physical manufacturing equipment. It is a containerized
@@ -159,7 +159,10 @@ environment, not continuous deployment to any persistent host.**
 
 ### Verification
 
-Actually run and inspected on this machine (commit `0fb963c`, 2026-09-16):
+Actually run and inspected on this machine (code as of commit `0fb963c`,
+2026-09-16 — no functional changes since, only documentation, so this also
+reflects the current `main` HEAD; independently re-confirmed by the CI run
+linked above):
 
 | Suite | Result |
 |---|---|
@@ -182,10 +185,10 @@ smoke test re-runs against a freshly deployed release in
 
 | | Status |
 |---|---|
-| Local deploy/rollback scripts | ✅ implemented and verified on this machine (see Verification) |
-| CI (lint/tests/build/compose-integration) | ✅ implemented, runs on GitHub-hosted runners |
-| Deployment validation (ephemeral, ad hoc environment) | ✅ implemented, runs on GitHub-hosted runners |
-| Automated CD to *this developer's own machine* triggered by GitHub | ❌ **not implemented** — no self-hosted runner was installed (by explicit choice, see ADR 0004); deploying here is a manual, scripted step |
+| Local deployment | Verified deploy/rollback scripts, invoked manually (`scripts/deploy.sh` / `scripts/rollback.sh`, both health-checked — see Verification above). |
+| CI (lint/tests/build/compose-integration) | Runs on GitHub-hosted runners — [passing run](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/runs/35154869148) on current `main`. |
+| Deployment validation (ephemeral environment) | Runs on GitHub-hosted runners — [passing run](https://github.com/cobraroot404-a11y/factoryops-fault-diagnosis/actions/runs/35154869093) on current `main`. |
+| Automated CD (GitHub → this developer's own machine) | Persistent GitHub-to-local deployment was intentionally excluded; see [ADR 0004](docs/adr/0004-no-self-hosted-runner.md). Deploying here remains a manual, scripted step. |
 
 ## Measurements
 
