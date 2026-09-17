@@ -215,18 +215,35 @@ result — see the report for the full caveats.
 Captured from an actual run of this stack (technician/customer flows, real
 simulated data, real incident lifecycle):
 
-| | |
-|---|---|
-| [00-dashboard-all-healthy.png](portfolio/screenshots/00-dashboard-all-healthy.png) | All 3 Northgate motors healthy, live charts |
-| [01-dashboard-fault-detected.png](portfolio/screenshots/01-dashboard-fault-detected.png) | Motor-1 shows FAULT after overheating injection |
-| [02-incidents-list.png](portfolio/screenshots/02-incidents-list.png) | Incident list, filterable by status/severity |
-| [03-incident-diagnosis.png](portfolio/screenshots/03-incident-diagnosis.png) | Observations, evidence, suspected causes |
-| [04-incident-checklist.png](portfolio/screenshots/04-incident-checklist.png) | Guided troubleshooting checklist |
-| [05-fault-injection-controls.png](portfolio/screenshots/05-fault-injection-controls.png) | Technician-only fault injection controls |
-| [06-tickets-linked.png](portfolio/screenshots/06-tickets-linked.png) | Customer ticket auto-linked to the open incident |
-| [07-incidents-resolved.png](portfolio/screenshots/07-incidents-resolved.png) | Incident list after resolution |
-| [08-incident-recovery-verified.png](portfolio/screenshots/08-incident-recovery-verified.png) | Recovery verified after the healthy window |
-| [09-factory-isolation-rivermill.png](portfolio/screenshots/09-factory-isolation-rivermill.png) | A Rivermill Fabrication technician sees only Rivermill's Motor-A/Motor-B — proof of factory isolation |
+**Healthy operation** — all 3 Northgate motors healthy, live charts:
+![Dashboard, all machines healthy](portfolio/screenshots/00-dashboard-all-healthy.png)
+
+**Fault detected** — Motor-1 shows FAULT after an overheating injection:
+![Dashboard showing Motor-1 in fault state](portfolio/screenshots/01-dashboard-fault-detected.png)
+
+**Incident list** — filterable by status/severity:
+![Incident list](portfolio/screenshots/02-incidents-list.png)
+
+**Diagnosis** — observations, evidence, and suspected causes, with no fabricated confidence score:
+![Incident diagnosis detail](portfolio/screenshots/03-incident-diagnosis.png)
+
+**Guided troubleshooting checklist**:
+![Guided troubleshooting checklist](portfolio/screenshots/04-incident-checklist.png)
+
+**Authorized fault injection controls** (technician-only):
+![Fault injection controls](portfolio/screenshots/05-fault-injection-controls.png)
+
+**Customer ticket auto-linked** to the open incident:
+![Ticket linked to an incident](portfolio/screenshots/06-tickets-linked.png)
+
+**Incident list after resolution**:
+![Incident list showing a resolved incident](portfolio/screenshots/07-incidents-resolved.png)
+
+**Recovery verified** after the sustained healthy-observation window:
+![Incident detail showing recovery verified](portfolio/screenshots/08-incident-recovery-verified.png)
+
+**Factory isolation** — a Rivermill Fabrication technician sees only Rivermill's Motor-A/Motor-B, never Northgate's data:
+![Rivermill dashboard showing only Rivermill's machines](portfolio/screenshots/09-factory-isolation-rivermill.png)
 
 The 3-minute demo recording described in
 [portfolio/video-script.md](portfolio/video-script.md) was **not recorded**
